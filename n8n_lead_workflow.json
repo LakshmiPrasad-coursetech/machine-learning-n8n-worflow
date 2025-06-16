@@ -1,0 +1,57 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger",
+      "name": "New Lead Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{ json: {\n  lead_id: 101,\n  first_name: \"John\",\n  last_name: \"Doe\",\n  company_id: 5,\n  engagement_score: 0.82,\n  title: \"CTO\"\n}}];"
+      },
+      "id": "simulate-lead-fetch",
+      "name": "Simulate Lead Fetch",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const score = $json[\"engagement_score\"];\nif (score > 0.7) {\n  return [{ json: { routing: \"CRM\" }}];\n} else if (score >= 0.4) {\n  return [{ json: { routing: \"Email Nurture\" }}];\n} else {\n  return [{ json: { routing: \"Suppress\" }}];\n}"
+      },
+      "id": "score-routing",
+      "name": "Route Based on Score",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{ json: { message: `Lead sent to: ${$json.routing}` }}];"
+      },
+      "id": "log-output",
+      "name": "Log Action",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "New Lead Trigger": {
+      "main": [["Simulate Lead Fetch"]]
+    },
+    "Simulate Lead Fetch": {
+      "main": [["Route Based on Score"]]
+    },
+    "Route Based on Score": {
+      "main": [["Log Action"]]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "id": "lead-scoring-automation",
+  "name": "Lead Scoring GTM Workflow"
+}
